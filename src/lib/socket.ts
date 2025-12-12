@@ -6,7 +6,7 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 class SocketService {
   private socket: Socket | null = null;
 
-  connect(token: string) {
+  connect(token?: string | null) {
     if (this.socket?.connected) return this.socket;
 
     this.socket = io(SOCKET_URL, {

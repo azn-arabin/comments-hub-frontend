@@ -54,7 +54,7 @@ export default function CommentItem({
   const [loading, setLoading] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
 
-  const isAuthor = user?.id === comment.author._id;
+  const isAuthor = user?.id === comment.author?._id;
   const hasLiked = user ? comment.likes.includes(user.id) : false;
   const hasDisliked = user ? comment.dislikes.includes(user.id) : false;
 
@@ -156,7 +156,6 @@ export default function CommentItem({
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {formatRelativeTime(comment.createdAt)}
-                    {comment.createdAt !== comment.updatedAt && " (edited)"}
                   </span>
                 </div>
 

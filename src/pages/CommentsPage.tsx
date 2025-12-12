@@ -2,7 +2,6 @@ import CommentSection from "@/components/comments/CommentSection";
 import Header from "@/components/Header";
 
 export default function CommentsPage() {
-  // You can make this dynamic with URL params if needed
   const pageId = "page-123";
 
   return (

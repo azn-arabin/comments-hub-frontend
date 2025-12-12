@@ -16,7 +16,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageSquare, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface CommentSectionProps {
   pageId: string;
@@ -52,13 +53,12 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
   }, [fetchComments]);
 
   useEffect(() => {
-    if (isAuthenticated && token) {
       socketService.connect(token);
       socketService.joinPage(pageId);
 
       socketService.onNewComment((comment) => {
         if (comment.pageId === pageId) {
-          if (!comment.parentCommentId) {
+          if (!comment.parentComment) {
             // Only add top-level comments to main list
             setComments((prev) => {
               // Avoid duplicates
@@ -67,92 +67,101 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
             });
             setTotalComments((prev) => prev + 1);
           } else {
-            // Handle reply comments - add to parent's replies
-            setComments((prev) =>
-              prev.map((c) => {
-                if (c._id === comment.parentCommentId) {
+            // Handle reply comments - add to parent's replies (recursively handle nested replies)
+            const addReplyToParent = (comments: Comment[]): Comment[] => {
+              return comments.map((c) => {
+                if (c._id === comment.parentComment) {
                   const replies = c.replies || [];
                   // Avoid duplicates
                   if (replies.some((r) => r._id === comment._id)) return c;
                   return { ...c, replies: [...replies, comment] };
                 }
+                // Check nested replies
+                if (c.replies && c.replies.length > 0) {
+                  return { ...c, replies: addReplyToParent(c.replies) };
+                }
                 return c;
-              })
-            );
+              });
+            };
+            setComments((prev) => addReplyToParent(prev));
           }
         }
       });
 
       socketService.onUpdateComment((updatedComment) => {
-        setComments((prev) =>
-          prev.map((comment) => {
+        const updateCommentRecursively = (comments: Comment[]): Comment[] => {
+          return comments.map((comment) => {
             if (comment._id === updatedComment._id) {
               return updatedComment;
             }
-            // Update in replies
-            if (comment.replies) {
-              comment.replies = comment.replies.map((reply) =>
-                reply._id === updatedComment._id ? updatedComment : reply
-              );
+            // Update in nested replies
+            if (comment.replies && comment.replies.length > 0) {
+              return { ...comment, replies: updateCommentRecursively(comment.replies) };
             }
             return comment;
-          })
-        );
+          });
+        };
+        setComments((prev) => updateCommentRecursively(prev));
       });
 
       socketService.onDeleteComment(({ commentId }) => {
+        const deleteCommentRecursively = (comments: Comment[]): Comment[] => {
+          return comments
+            .filter((comment) => comment._id !== commentId)
+            .map((comment) => {
+              if (comment.replies && comment.replies.length > 0) {
+                return { ...comment, replies: deleteCommentRecursively(comment.replies) };
+              }
+              return comment;
+            });
+        };
         setComments((prev) => {
-          const filtered = prev.filter((comment) => {
-            if (comment._id === commentId) return false;
-            // Remove from replies
-            if (comment.replies) {
-              comment.replies = comment.replies.filter((reply) => reply._id !== commentId);
-            }
-            return true;
-          });
-          return filtered;
+          const newComments = deleteCommentRecursively(prev);
+          // Only decrement total if a top-level comment was deleted
+          const wasTopLevel = prev.some((c) => c._id === commentId);
+          if (wasTopLevel) {
+            setTotalComments((count) => Math.max(0, count - 1));
+          }
+          return newComments;
         });
-        setTotalComments((prev) => Math.max(0, prev - 1));
       });
 
       socketService.onLikeComment((updatedComment) => {
-        setComments((prev) =>
-          prev.map((comment) => {
+        const updateLikeRecursively = (comments: Comment[]): Comment[] => {
+          return comments.map((comment) => {
             if (comment._id === updatedComment._id) {
               return updatedComment;
             }
-            if (comment.replies) {
-              comment.replies = comment.replies.map((reply) =>
-                reply._id === updatedComment._id ? updatedComment : reply
-              );
+            if (comment.replies && comment.replies.length > 0) {
+              return { ...comment, replies: updateLikeRecursively(comment.replies) };
             }
             return comment;
-          })
-        );
+          });
+        };
+        setComments((prev) => updateLikeRecursively(prev));
       });
 
       socketService.onDislikeComment((updatedComment) => {
-        setComments((prev) =>
-          prev.map((comment) => {
+        const updateDislikeRecursively = (comments: Comment[]): Comment[] => {
+          return comments.map((comment) => {
             if (comment._id === updatedComment._id) {
               return updatedComment;
             }
-            if (comment.replies) {
-              comment.replies = comment.replies.map((reply) =>
-                reply._id === updatedComment._id ? updatedComment : reply
-              );
+            if (comment.replies && comment.replies.length > 0) {
+              return { ...comment, replies: updateDislikeRecursively(comment.replies) };
             }
             return comment;
-          })
-        );
+          });
+        };
+        setComments((prev) => updateDislikeRecursively(prev));
       });
 
       return () => {
         socketService.leavePage(pageId);
         socketService.removeAllListeners();
       };
-    }
-  }, [isAuthenticated, token, pageId, sortBy]);
+    
+  }, [ pageId, sortBy, token]);
 
   const handleCreateComment = async (content: string) => {
     await commentsApi.createComment({ content, pageId });
@@ -180,24 +189,12 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
   };
 
   const handleReply = async (parentId: string, content: string) => {
-    const response = await commentsApi.createComment({
+    await commentsApi.createComment({
       content,
       pageId,
       parentCommentId: parentId,
     });
-
-    // Add reply to the parent comment
-    setComments((prev) =>
-      prev.map((comment) => {
-        if (comment._id === parentId) {
-          return {
-            ...comment,
-            replies: comment.replies ? [...comment.replies, response.data] : [response.data],
-          };
-        }
-        return comment;
-      })
-    );
+    // Socket will handle adding the reply to parent's replies array
   };
 
   const handleLoadReplies = async (commentId: string) => {
@@ -273,7 +270,12 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
       ) : (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">Please log in to leave a comment</p>
+            <Button asChild variant="outline" className="cursor-pointer">
+              <Link to="/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login to leave a comment
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -298,6 +300,7 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
             size="icon"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1 || loading}
+            className="cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -309,6 +312,7 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
             size="icon"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages || loading}
+            className="cursor-pointer"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

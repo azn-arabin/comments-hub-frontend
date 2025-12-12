@@ -2,7 +2,8 @@ import { useAuth } from "@/components/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, MessageSquare } from "lucide-react";
+import { LogOut, MessageSquare, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +38,7 @@ export default function Header() {
           {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full cursor-pointer">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(user.username)}</AvatarFallback>
                   </Avatar>
@@ -57,7 +58,14 @@ export default function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : null}
+          ) : (
+            <Button asChild variant="outline" className="cursor-pointer">
+              <Link to="/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

@@ -41,7 +41,7 @@ export default function Login() {
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left Side - Form */}
       <div className="flex flex-col items-center justify-center p-6 md:p-8 lg:p-12">
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 z-10">
           <ModeToggle />
         </div>
         

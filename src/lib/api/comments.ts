@@ -9,7 +9,7 @@ export interface Comment {
     username: string;
     email: string;
   };
-  parentCommentId?: string;
+  parentComment?: string;
   likes: string[];
   dislikes: string[];
   createdAt: string;
