@@ -73,8 +73,8 @@ src/
 1. **Clone the repository**
 
 ```bash
-git clone <repository-url>
-cd comments-frontend
+git clone https://github.com/azn-arabin/comments-hub-frontend.git
+cd comments-hub-frontend
 ```
 
 2. **Install dependencies**
@@ -218,6 +218,16 @@ Deploy the `dist` folder to your hosting service:
 - AWS S3 + CloudFront
 - Any static hosting service
 
+### Vercel Deployment
+
+For Vercel deployment, the `vercel.json` file is already configured to handle client-side routing. Simply:
+
+1. Connect your GitHub repo to Vercel
+2. Deploy from the `main` branch
+3. Set environment variables in Vercel dashboard:
+   - `VITE_API_BASE_URL` - Your production API URL
+   - `VITE_SOCKET_URL` - Your production Socket.io URL
+
 ## Environment Variables
 
 | Variable            | Description          | Default                     |
@@ -271,28 +281,6 @@ For issues and questions:
 - Create an issue on GitHub
 - Check existing issues for solutions
 - Review the backend API documentation
-  import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-globalIgnores(['dist']),
-{
-files: ['**/*.{ts,tsx}'],
-extends: [
-// Other configs...
-// Enable lint rules for React
-reactX.configs['recommended-typescript'],
-// Enable lint rules for React DOM
-reactDom.configs.recommended,
-],
-languageOptions: {
-parserOptions: {
-project: ['./tsconfig.node.json', './tsconfig.app.json'],
-tsconfigRootDir: import.meta.dirname,
-},
-// other options...
-},
-},
-])
 
 ```
 
