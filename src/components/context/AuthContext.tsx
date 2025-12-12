@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const response = await authApi.getCurrentUser();
           setUser(response.data);
-        } catch (error) {
+        } catch (_error) {
           // Token is invalid, clear storage
           localStorage.removeItem("token");
           localStorage.removeItem("user");

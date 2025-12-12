@@ -40,6 +40,19 @@ export interface CommentsResponse {
   pagination: PaginationData;
 }
 
+// Backend response structure
+interface BackendCommentsResponse {
+  status: string;
+  message: string;
+  meta: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+  };
+  data: Comment[];
+}
+
 export type SortOption = "newest" | "mostLiked" | "mostDisliked";
 
 export const commentsApi = {
@@ -49,10 +62,21 @@ export const commentsApi = {
     limit: number = 10,
     sort: SortOption = "newest"
   ): Promise<CommentsResponse> => {
-    const response = await api.get<CommentsResponse>(
+    const response = await api.get<BackendCommentsResponse>(
       `/comments/${pageId}?page=${page}&limit=${limit}&sort=${sort}`
     );
-    return response.data;
+
+    // Transform backend response to frontend format
+    return {
+      success: response.data.status === "success",
+      data: response.data.data,
+      pagination: {
+        page: response.data.meta.currentPage,
+        limit: response.data.meta.pageSize,
+        totalPages: response.data.meta.totalPages,
+        totalComments: response.data.meta.totalItems,
+      },
+    };
   },
 
   createComment: async (

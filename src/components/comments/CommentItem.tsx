@@ -62,7 +62,7 @@ export default function CommentItem({
     setLoading(true);
     try {
       await onLike(comment._id);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to like comment");
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export default function CommentItem({
     setLoading(true);
     try {
       await onDislike(comment._id);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to dislike comment");
     } finally {
       setLoading(false);
@@ -91,7 +91,7 @@ export default function CommentItem({
       await onUpdate(comment._id, editContent);
       setIsEditing(false);
       toast.success("Comment updated");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update comment");
     } finally {
       setLoading(false);
@@ -104,7 +104,7 @@ export default function CommentItem({
       await onDelete(comment._id);
       toast.success("Comment deleted");
       setShowDeleteDialog(false);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to delete comment");
     } finally {
       setLoading(false);
@@ -188,7 +188,7 @@ export default function CommentItem({
                   <Textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    className="min-h-[80px]"
+                    className="min-h-20"
                     maxLength={1000}
                   />
                   <div className="flex gap-2">
@@ -216,7 +216,7 @@ export default function CommentItem({
                   </div>
                 </div>
               ) : (
-                <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
+                <p className="text-sm whitespace-pre-wrap wrap-break-word">{comment.content}</p>
               )}
 
               <div className="flex items-center gap-2 pt-2">

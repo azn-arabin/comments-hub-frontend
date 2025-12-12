@@ -39,7 +39,7 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
       setComments(response.data);
       setTotalPages(response.pagination.totalPages);
       setTotalComments(response.pagination.totalComments);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to load comments");
     } finally {
       setLoading(false);
@@ -194,7 +194,7 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
           return comment;
         })
       );
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to load replies");
     }
   };
@@ -215,7 +215,7 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
               <span className="text-muted-foreground">({totalComments})</span>
             </CardTitle>
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-45">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

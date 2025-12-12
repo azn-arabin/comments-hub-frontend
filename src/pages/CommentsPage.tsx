@@ -6,13 +6,13 @@ export default function CommentsPage() {
   const pageId = "page-123";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-linear-to-br from-background to-muted">
       <Header />
-      <main className="container py-8">
+      <main className="container py-8 px-4 md:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight">Discussion</h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mt-2">
               Share your thoughts and engage with the community
             </p>
           </div>
