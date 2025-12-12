@@ -133,9 +133,10 @@ export default function CommentItem({
       .slice(0, 2);
   };
 
+
   return (
-    <div className={depth > 0 ? "ml-8 mt-4" : ""}>
-      <Card>
+    <div className={depth > 0 ? "ml-8 mt-4 border-l-2 border-muted pl-4" : ""}>
+      <Card className="shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <Avatar className="h-10 w-10">
@@ -192,7 +193,7 @@ export default function CommentItem({
                     maxLength={1000}
                   />
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={handleUpdate} disabled={loading}>
+                    <Button size="sm" onClick={handleUpdate} disabled={loading} className="cursor-pointer">
                       {loading ? (
                         <>
                           <Loader2 className="mr-2 h-3 w-3 animate-spin" />
@@ -210,6 +211,7 @@ export default function CommentItem({
                         setEditContent(comment.content);
                       }}
                       disabled={loading}
+                      className="cursor-pointer"
                     >
                       Cancel
                     </Button>
@@ -225,7 +227,7 @@ export default function CommentItem({
                   size="sm"
                   onClick={handleLike}
                   disabled={loading}
-                  className="gap-1"
+                  className="gap-1 cursor-pointer"
                 >
                   <ThumbsUp className="h-4 w-4" />
                   <span>{comment.likes.length}</span>
@@ -236,7 +238,7 @@ export default function CommentItem({
                   size="sm"
                   onClick={handleDislike}
                   disabled={loading}
-                  className="gap-1"
+                  className="gap-1 cursor-pointer"
                 >
                   <ThumbsDown className="h-4 w-4" />
                   <span>{comment.dislikes.length}</span>
@@ -247,7 +249,7 @@ export default function CommentItem({
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowReplyForm(!showReplyForm)}
-                    className="gap-1"
+                    className="gap-1 cursor-pointer"
                   >
                     <MessageSquare className="h-4 w-4" />
                     Reply
@@ -255,7 +257,7 @@ export default function CommentItem({
                 )}
 
                 {comment.replies && comment.replies.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={handleLoadReplies} className="gap-1">
+                  <Button variant="ghost" size="sm" onClick={handleLoadReplies} className="gap-1 cursor-pointer">
                     <MessageSquare className="h-4 w-4" />
                     {showReplies ? "Hide" : "Show"} {comment.replies.length}{" "}
                     {comment.replies.length === 1 ? "reply" : "replies"}
@@ -306,10 +308,10 @@ export default function CommentItem({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={loading}>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={loading} className="cursor-pointer">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+            <Button variant="destructive" onClick={handleDelete} disabled={loading} className="cursor-pointer">
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

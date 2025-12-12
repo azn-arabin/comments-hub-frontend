@@ -30,6 +30,7 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalComments, setTotalComments] = useState(0);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [showCommentForm, setShowCommentForm] = useState(false);
   const limit = 10;
 
   const fetchComments = useCallback(async () => {
@@ -56,13 +57,29 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
       socketService.joinPage(pageId);
 
       socketService.onNewComment((comment) => {
-        if (comment.pageId === pageId && !comment.parentCommentId) {
-          setComments((prev) => {
-            // Avoid duplicates
-            if (prev.some((c) => c._id === comment._id)) return prev;
-            return sortBy === "newest" ? [comment, ...prev] : [...prev, comment];
-          });
-          setTotalComments((prev) => prev + 1);
+        if (comment.pageId === pageId) {
+          if (!comment.parentCommentId) {
+            // Only add top-level comments to main list
+            setComments((prev) => {
+              // Avoid duplicates
+              if (prev.some((c) => c._id === comment._id)) return prev;
+              return sortBy === "newest" ? [comment, ...prev] : [...prev, comment];
+            });
+            setTotalComments((prev) => prev + 1);
+          } else {
+            // Handle reply comments - add to parent's replies
+            setComments((prev) =>
+              prev.map((c) => {
+                if (c._id === comment.parentCommentId) {
+                  const replies = c.replies || [];
+                  // Avoid duplicates
+                  if (replies.some((r) => r._id === comment._id)) return c;
+                  return { ...c, replies: [...replies, comment] };
+                }
+                return c;
+              })
+            );
+          }
         }
       });
 
@@ -215,13 +232,13 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
               <span className="text-muted-foreground">({totalComments})</span>
             </CardTitle>
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-45">
+              <SelectTrigger className="w-45 cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="mostLiked">Most Liked</SelectItem>
-                <SelectItem value="mostDisliked">Most Disliked</SelectItem>
+                <SelectItem value="newest" className="cursor-pointer">Newest First</SelectItem>
+                <SelectItem value="mostLiked" className="cursor-pointer">Most Liked</SelectItem>
+                <SelectItem value="mostDisliked" className="cursor-pointer">Most Disliked</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -229,7 +246,30 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
       </Card>
 
       {isAuthenticated ? (
-        <CommentForm onSubmit={handleCreateComment} />
+        <Card>
+          <CardContent className="pt-6">
+            {!showCommentForm ? (
+              <Button 
+                onClick={() => setShowCommentForm(true)} 
+                variant="outline" 
+                className="w-full cursor-pointer"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Write a comment...
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <CommentForm 
+                  onSubmit={async (content) => {
+                    await handleCreateComment(content);
+                    setShowCommentForm(false);
+                  }} 
+                  onCancel={() => setShowCommentForm(false)}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="py-8 text-center">
