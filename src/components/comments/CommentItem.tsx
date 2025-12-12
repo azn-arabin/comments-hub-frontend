@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Comment } from "@/lib/api/comments";
 import { useAuth } from "@/components/context/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -46,7 +47,8 @@ export default function CommentItem({
   onLoadReplies,
   depth = 0,
 }: CommentItemProps) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -247,7 +249,13 @@ export default function CommentItem({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowReplyForm(!showReplyForm)}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        navigate('/login');
+                        return;
+                      }
+                      setShowReplyForm(!showReplyForm);
+                    }}
                     className="gap-1 cursor-pointer"
                   >
                     <MessageSquare className="h-4 w-4" />
@@ -268,7 +276,7 @@ export default function CommentItem({
         </CardContent>
       </Card>
 
-      {showReplyForm && (
+      {showReplyForm && isAuthenticated && (
         <div className="mt-4">
           <CommentForm
             onSubmit={handleReply}
