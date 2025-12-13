@@ -222,7 +222,7 @@ export default function CommentItem({
                 <p className="text-sm whitespace-pre-wrap wrap-break-word">{comment.content}</p>
               )}
 
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 flex-wrap">
                 <Button
                   variant={hasLiked ? "default" : "ghost"}
                   size="sm"

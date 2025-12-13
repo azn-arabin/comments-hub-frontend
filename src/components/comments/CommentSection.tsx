@@ -222,14 +222,14 @@ export default function CommentSection({ pageId }: CommentSectionProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
               Comments
               <span className="text-muted-foreground">({totalComments})</span>
             </CardTitle>
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-45 cursor-pointer">
+              <SelectTrigger className="w-full sm:w-auto cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
